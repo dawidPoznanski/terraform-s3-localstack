@@ -14,21 +14,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 'Checkout code'
-      uses: actions/checkout@v2
+      - name: 'Checkout code'
+        uses: actions/checkout@v2
 
-    - name: 'Setup Terraform'
-      uses: hashicorp/setup-terraform@v1
+      - name: 'Setup Terraform'
+        uses: hashicorp/setup-terraform@v1
 
-    - name: 'Terraform Init'
-      run: terraform init
+      - name: 'Terraform Init'
+        run: terraform init
 
-    - name: 'Terraform Plan'
-      run: terraform plan
+      - name: 'Terraform Plan'
+        run: terraform plan
 
-    - name: 'Terraform Apply'
-      if: github.event_name == 'push'
-      run: terraform apply -auto-approve
+      - name: 'Terraform Apply'
+        if: github.event_name == 'push'
+        run: terraform apply -auto-approve
 
       - name: Set output
         run: echo "name=value" >> $GITHUB_ENV
