@@ -29,3 +29,6 @@ jobs:
     - name: 'Terraform Apply'
       if: github.event_name == 'push'
       run: terraform apply -auto-approve
+
+      - name: Set output
+        run: echo "name=value" >> $GITHUB_ENV
