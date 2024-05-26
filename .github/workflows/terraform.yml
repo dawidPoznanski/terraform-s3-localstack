@@ -13,12 +13,25 @@ jobs:
     name: 'Terraform'
     runs-on: ubuntu-latest
 
+    services:
+      localstack:
+        image: localstack/localstack
+        ports:
+          - 4566:4566
+        options: --network-alias=localstack
+
     steps:
       - name: 'Checkout code'
         uses: actions/checkout@v2
 
       - name: 'Setup Terraform'
         uses: hashicorp/setup-terraform@v1
+
+      - name: 'Configure AWS credentials'
+        run: |
+          echo "AWS_ACCESS_KEY_ID=mock_access_key" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=mock_secret_key" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
 
       - name: 'Terraform Init'
         run: terraform init
@@ -30,5 +43,11 @@ jobs:
         if: github.event_name == 'push'
         run: terraform apply -auto-approve
 
-      - name: Set output
+      - name: 'Get Bucket Name Output'
+        id: get_output
+        run: |
+          bucket_name=$(terraform output -raw bucket_name)
+          echo "bucket_name=${bucket_name}" >> $GITHUB_ENV
+
+      - name: 'Set output'
         run: echo "name=value" >> $GITHUB_ENV
