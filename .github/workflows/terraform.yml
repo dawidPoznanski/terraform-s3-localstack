@@ -1,4 +1,4 @@
-name: 'Terraform'
+name: Terraform
 
 on:
   push:
@@ -10,44 +10,32 @@ on:
 
 jobs:
   terraform:
-    name: 'Terraform'
     runs-on: ubuntu-latest
 
-    services:
-      localstack:
-        image: localstack/localstack
-        ports:
-          - 4566:4566
-        options: --network-alias=localstack
-
     steps:
-      - name: 'Checkout code'
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: 'Setup Terraform'
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.0
 
-      - name: 'Configure AWS credentials'
+      - name: Install Localstack
         run: |
-          echo "AWS_ACCESS_KEY_ID=mock_access_key" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=mock_secret_key" >> $GITHUB_ENV
-          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
+          pip install localstack awscli-local
 
-      - name: 'Terraform Init'
+      - name: Start Localstack
+        run: localstack start -d
+
+      - name: Terraform Init
         run: terraform init
 
-      - name: 'Terraform Plan'
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
         run: terraform plan
 
-      - name: 'Terraform Apply'
-        if: github.event_name == 'push'
+      - name: Terraform Apply
         run: terraform apply -auto-approve
-
-      - name: 'Get Bucket Name Output'
-        id: get_output
-        run: |
-          bucket_name=$(terraform output -raw bucket_name)
-          echo "bucket_name=${bucket_name}" >> $GITHUB_ENV
-
-      - name: 'Set output'
-        run: echo "name=value" >> $GITHUB_ENV
